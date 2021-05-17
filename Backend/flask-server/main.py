@@ -12,7 +12,7 @@ db = SQLAlchemy(app)
 
 class Plant(db.Model):
 	plant_id = db.Column(db.String(50), primary_key=True, nullable=False)
-	plant_name = db.Column(db.String(20), unique=True, nullable=False)
+	plant_name = db.Column(db.String(20), unique=False, nullable=False)
 	measurements = db.relationship('Measurement', backref='plant', lazy=True)
 
 	def __repr__(self):
