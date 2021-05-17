@@ -1,2 +1,5 @@
 static/react/*
 templates/index.html
+venv/
+database.db
+__pycache__/
