@@ -12,6 +12,15 @@ The system comprises of 3 components
 - https://blog.learningdollars.com/2019/11/29/how-to-serve-a-reactapp-with-a-flask-server/
 
 
+# Exposed Pages
+
+### Index (View list of plants)
+- <IP_ADDRESS>:5000/
+
+### Plant Data and Control View
+- <IP_ADDRESS>:5000/plant/<plant_id>
+
+
 # API
 
 ## Register Plant 
@@ -59,6 +68,7 @@ The system comprises of 3 components
 
 	Example:
 	- <IP_ADDRESS>:5000/get-plants
+
 
 # Steps
 
