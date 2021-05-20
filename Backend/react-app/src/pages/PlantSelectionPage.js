@@ -1,4 +1,5 @@
 import React from 'react';
+import NavBarView from '../components/NavBar';
 import PlantView from '../components/PlantView';
 
 function get_plant_list(handler) {
@@ -33,6 +34,7 @@ class PlantSelectionPage extends React.Component {
 	render() {
 		return (
 		<div>
+			<NavBarView title="Select a Plant"/>
 			<h1>PlantView Page</h1>
 			{
 				this.state.plants.map(

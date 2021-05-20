@@ -1,4 +1,5 @@
 import React from 'react';
+import NavBarView from '../components/NavBar';
 import PlantView from '../components/PlantView';
 import DataView from '../components/DataView';
 
@@ -61,9 +62,19 @@ class PlantViewPage extends React.Component {
 		console.log(this.state)
 	}
 
+	get_plant_name() {
+		if(this.state.plant == null) {
+			return ""
+		} else {
+			return this.state.plant.name
+		}
+	}
+ 
 	render() {
+		console.log(this.get_plant_name())
 		return (
 		<div>
+			<NavBarView title={this.get_plant_name()}/>
 			<p>PlantView Page</p>
 			<PlantView plant={this.state.plant} />
 			<DataView data={this.state.data} />
