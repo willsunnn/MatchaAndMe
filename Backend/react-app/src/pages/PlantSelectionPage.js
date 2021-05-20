@@ -1,6 +1,17 @@
 import React from 'react';
 import PlantView from '../components/PlantView';
-import get_plant_list from '../API';
+
+function get_plant_list(handler) {
+	const Http = new XMLHttpRequest();
+	const url = '/get-plants';
+	Http.onreadystatechange = function() {
+		if(this.readyState==4 && this.status==200) {
+			handler(Http.responseText);
+		}
+	}
+	Http.open("GET", url, true);
+	Http.send();
+}
 
 class PlantSelectionPage extends React.Component {
 
@@ -20,7 +31,6 @@ class PlantSelectionPage extends React.Component {
 	}
 
 	render() {
-		console.log(this.state.plants)
 		return (
 		<div>
 			<h1>PlantView Page</h1>

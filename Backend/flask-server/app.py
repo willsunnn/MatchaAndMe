@@ -34,8 +34,11 @@ class Measurement(db.Model):
 		return json.JSONEncoder().encode(obj)
 
 @app.route("/")
-@app.route("/plant")
 def my_index():
+	return render_template("index.html")
+
+@app.route("/plants/<plant_id>")
+def view_plant(plant_id):
 	return render_template("index.html")
 
 
