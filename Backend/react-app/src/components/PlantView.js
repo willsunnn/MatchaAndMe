@@ -1,24 +1,25 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import plantImg from '../resources/plant.png';
 
 class PlantView extends React.PureComponent {
 
 	constructor(props) {
 		super(props);
-		console.log(props);
 		this.state = {
-			name: props.plant.plant_name,
-			id: props.plant.id
+			plant: props.plant
 		};
-
-		console.log(this.state);
 	}
 
 	render() {
+		if(this.state.plant == null) {
+			return ""
+		}
 		return (
-			<div className="plant-view">
-				<p>{this.state.name} has ID {this.state.id}</p>
-			</div>
+		<div className="plant-view">
+			<p>{this.state.plant.plant_name} has ID {this.state.plant.id}</p>
+			<Link to={"/plants/"+this.state.plant.id}>View data</Link> 
+		</div>
 		);
 	}
 }

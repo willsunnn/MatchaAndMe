@@ -67,6 +67,15 @@ def send_data(plant_id):
 	db.session.commit()
 	return "success"
 
+@app.route("/get-plant/<plant_id>")
+def get_plant(plant_id):
+	id = int(plant_id)
+	plant: Plant = Plant.query.filter_by(plant_id=id).first()
+	if plant is None:
+		return "null"
+	else:
+		return str(plant)
+
 @app.route("/get-data/<plant_id>")
 def get_data(plant_id):
 	id = int(plant_id)
