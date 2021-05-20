@@ -19,10 +19,12 @@ float hum;  // var to store hum sensor value
 float temp; // var to store temop sensor value
 
 #define LIGHT_SENSOR A0     // light sensor data pin
-int light_value;
+int light_analog;
+float light;                // light level value as %
 
 #define SOIL_SENSOR A1      // soil moisture sensor data pin
-int soil_value;
+int soil_analog;
+float soil;                 // soil moisture value as %
 
 unsigned int nextTime = 0;    // Next time to contact the server
 HttpClient http;
@@ -74,18 +76,19 @@ void loop() {
 	
 	// Light Sensor Reading Code //
 	// low value means dim/little light, high value means bright/lot light
-	light_value = analogRead(LIGHT_SENSOR);
+	light_analog = analogRead(LIGHT_SENSOR);
+	light = light_analog / 4095.0;
 	
 	// Soil Moisture Reading Code //
 	// low value means there is a lot of moisture, high value means it's dry
-	soil_value = analogRead(SOIL_SENSOR);
-	
+	soil_analog = analogRead(SOIL_SENSOR);
+	soil = 1.0 - (soil_analog / 4095.0);
 	
 	// Print sensor values via Serial (used for debugging)
 	Serial.printlnf("Temperature: %f deg F", temp);
 	Serial.printlnf("Humidity: %f %%", hum);
-	Serial.printlnf("Light Level: %d", light_value);
-	Serial.printlnf("Soil Moisture: %d", soil_value);
+	Serial.printlnf("Light Level: %f %%", light);
+	Serial.printlnf("Soil Moisture: %f %%", soil);
 	
 	// Send data to web app
 	if (nextTime > millis()) {
@@ -94,7 +97,7 @@ void loop() {
 	request.hostname = hostname;
     request.port = 5000;
     char buffer[200];
-    sprintf(buffer, "/send-data/1?temp=%f&hum=%f&light=%d&soil=%d", temp, hum, light_value, soil_value);
+    sprintf(buffer, "/send-data/1?temp=%f&hum=%f&light=%f&soil=%f", temp, hum, light, soil);
     request.path = buffer;
     
     // Get request
