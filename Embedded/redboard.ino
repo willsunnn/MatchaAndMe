@@ -9,6 +9,9 @@
     // control light level of LED
     
 #include <SparkFunRHT03.h>
+#include <stdio.h>
+#include <HttpClient.h>
+#include "application.h"
 
 #define RHT03_DATA_PIN D2       // RHT03 data pin
 RHT03 rht;                      // Create RTH03 object
@@ -21,6 +24,20 @@ int light_value;
 #define SOIL_SENSOR A1      // soil moisture sensor data pin
 int soil_value;
 
+unsigned int nextTime = 0;    // Next time to contact the server
+HttpClient http;
+String hostname = "73.170.193.51";
+
+// Headers currently need to be set at init, usefulfor API keys etc.
+http_header_t headers[] = {
+    //  { "Content-Type", "application/json" },
+    //  { "Accept" , "application/json" },
+    { "Accept" , "*/*"},
+    { NULL, NULL } // NOTE: Always terminate headers will NULL
+};
+
+http_request_t request;
+http_response_t response;
 
 
 void setup() {
@@ -56,9 +73,11 @@ void loop() {
 	}
 	
 	// Light Sensor Reading Code //
+	// low value means dim/little light, high value means bright/lot light
 	light_value = analogRead(LIGHT_SENSOR);
 	
 	// Soil Moisture Reading Code //
+	// low value means there is a lot of moisture, high value means it's dry
 	soil_value = analogRead(SOIL_SENSOR);
 	
 	
@@ -67,6 +86,48 @@ void loop() {
 	Serial.printlnf("Humidity: %f %%", hum);
 	Serial.printlnf("Light Level: %d", light_value);
 	Serial.printlnf("Soil Moisture: %d", soil_value);
+	
+	// Send data to web app
+	if (nextTime > millis()) {
+        return;
+    }
+	request.hostname = hostname;
+    request.port = 5000;
+    char buffer[200];
+    sprintf(buffer, "/send-data/1?temp=%f&hum=%f&light=%d&soil=%d", temp, hum, light_value, soil_value);
+    request.path = buffer;
+    
+    // Get request
+    http.get(request, response, headers);
+    Serial.print("Application>\tResponse status: ");
+    Serial.println(response.status);
+    
+    Serial.print("Application>\tHTTP Response Body:");
+    Serial.println(response.body);
+    
+    nextTime = millis() + 10000;
+    
+    
+    // Actuator Code //
+    
+    // Water Valve (Servo) Control Code
+        // For manual control:
+            // recieve request from web app
+            // adjust servo position based on request
+            // report current state of servo back to web app
+        // For automatic control:
+            // based on soil moisture value, adjust servo position
+            // report current state of servo back to web app
+
+    // LED Control Code
+        // For manual control:
+            // recieve request from web app
+            // turn on/off LED based on request
+            // report current state of LED back to web app
+        // For automatic control:
+            // based on light level value, adjust LED if necessary
+            // report current state of LED back to web app
+	
 	
 	delay(5000);
 	
