@@ -34,7 +34,11 @@ class Measurement(db.Model):
 		return json.JSONEncoder().encode(obj)
 
 @app.route("/")
-def my_index():
+def view_home():
+	return render_template("index.html")
+
+@app.route("/about")
+def view_about():
 	return render_template("index.html")
 
 @app.route("/plants/<plant_id>")
@@ -65,6 +69,7 @@ def send_data(plant_id):
 	l = request.args.get("light")
 	s = request.args.get("soil")
 
+	print(f"Recieved Data = t={t}, h={h}, l={l}, s={s}")
 	new_measurement = Measurement(hwid=id, temp=t, humidity=h, light_level=l, soil_moisture=s)
 	db.session.add(new_measurement)
 	db.session.commit()
