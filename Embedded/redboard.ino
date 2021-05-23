@@ -13,6 +13,9 @@
 #include <HttpClient.h>
 #include "application.h"
 
+String deviceID;
+String ACCESS_TOKEN = "70c03368690a979ad59072ae2a2d921fc3dc5b0b";
+
 #define RHT03_DATA_PIN D2       // RHT03 data pin
 RHT03 rht;                      // Create RTH03 object
 float hum;  // var to store hum sensor value
@@ -25,6 +28,8 @@ float light;                // light level value as %
 #define SOIL_SENSOR A1      // soil moisture sensor data pin
 int soil_analog;
 float soil;                 // soil moisture value as %
+
+#define LED D3              // LED pin
 
 unsigned int nextTime = 0;    // Next time to contact the server
 HttpClient http;
@@ -43,13 +48,18 @@ http_response_t response;
 
 
 void setup() {
-    
+    deviceID = System.deviceID();       // get device ID
+    Serial.println(deviceID);
     Serial.begin(9600);
     
     rht.begin(RHT03_DATA_PIN);          // initialize rht03 sensor
     pinMode(LIGHT_SENSOR, INPUT);       // configures light sensor as an input
     pinMode(SOIL_SENSOR, INPUT);        // configures soil sensor as a input
+    
+    pinMode(LED, OUTPUT);
 
+    // declare a Particle function so when the cloud sends the function "cloud" we call controlWaterValve
+    Particle.function("led", controlLED);
 }
 
 void loop() {
@@ -77,27 +87,30 @@ void loop() {
 	// Light Sensor Reading Code //
 	// low value means dim/little light, high value means bright/lot light
 	light_analog = analogRead(LIGHT_SENSOR);
-	light = light_analog / 4095.0;
+	light = (light_analog / 4095.0) * 100;
 	
 	// Soil Moisture Reading Code //
 	// low value means there is a lot of moisture, high value means it's dry
 	soil_analog = analogRead(SOIL_SENSOR);
-	soil = 1.0 - (soil_analog / 4095.0);
+	soil = (1.0 - (soil_analog / 4095.0)) * 100;
 	
-	// Print sensor values via Serial (used for debugging)
-	Serial.printlnf("Temperature: %f deg F", temp);
-	Serial.printlnf("Humidity: %f %%", hum);
-	Serial.printlnf("Light Level: %f %%", light);
-	Serial.printlnf("Soil Moisture: %f %%", soil);
+	
 	
 	// Send data to web app
 	if (nextTime > millis()) {
         return;
     }
+    
+    // Print sensor values via Serial (used for debugging)
+	Serial.printlnf("Temperature: %f deg F", temp);
+	Serial.printlnf("Humidity: %f %%", hum);
+	Serial.printlnf("Light Level: %f %%", light);
+	Serial.printlnf("Soil Moisture: %f %%", soil);
+    
 	request.hostname = hostname;
     request.port = 5000;
     char buffer[200];
-    sprintf(buffer, "/send-data/1?temp=%f&hum=%f&light=%f&soil=%f", temp, hum, light, soil);
+    sprintf(buffer, "/send-data/1?temp=%4.2f&hum=%4.2f&light=%4.2f&soil=%4.2f", temp, hum, light, soil);
     request.path = buffer;
     
     // Get request
@@ -107,6 +120,7 @@ void loop() {
     
     Serial.print("Application>\tHTTP Response Body:");
     Serial.println(response.body);
+    Serial.println();
     
     nextTime = millis() + 10000;
     
@@ -121,6 +135,7 @@ void loop() {
         // For automatic control:
             // based on soil moisture value, adjust servo position
             // report current state of servo back to web app
+    
 
     // LED Control Code
         // For manual control:
@@ -131,7 +146,26 @@ void loop() {
             // based on light level value, adjust LED if necessary
             // report current state of LED back to web app
 	
-	
 	delay(5000);
 	
+}
+
+
+// for debugging, type the following in a terminal (assuming Particle CLI is installed):
+    // particle call {device_id} led {command}
+int controlLED(String command) {
+    if (command == "on")
+    {
+        digitalWrite(LED, HIGH);
+        return 1;
+    }
+    else if (command == "off")
+    {
+        digitalWrite(LED, LOW);
+        return 1;
+    }
+    else
+    {
+        return -1;
+    }
 }
