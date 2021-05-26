@@ -7,16 +7,18 @@
 // Recieve commands from web application to control actuators
     // turn on water valve (represented by servo)
     // control light level of LED
-    
+
+#include <JsonParserGeneratorRK.h>
 #include <SparkFunRHT03.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <HttpClient.h>
 #include "application.h"
 
 String deviceID;
 String ACCESS_TOKEN = "70c03368690a979ad59072ae2a2d921fc3dc5b0b";
 
-#define RHT03_DATA_PIN D2       // RHT03 data pin
+#define RHT03_DATA_PIN D6       // RHT03 data pin
 RHT03 rht;                      // Create RTH03 object
 float hum;  // var to store hum sensor value
 float temp; // var to store temop sensor value
@@ -30,6 +32,11 @@ int soil_analog;
 float soil;                 // soil moisture value as %
 
 #define LED D3              // LED pin
+
+#define SERVO D2            // servo pin
+Servo servo;                // create servo object
+int servo_pos;
+int servo_time;
 
 unsigned int nextTime = 0;    // Next time to contact the server
 HttpClient http;
@@ -46,6 +53,15 @@ http_header_t headers[] = {
 http_request_t request;
 http_response_t response;
 
+// Json parser
+JsonParserStatic<256, 20> parser;
+int plant_id;
+bool led_is_on;
+bool valve_is_auto;
+float valve_manual_value;
+float valve_remaining_time;
+float valve_auto_value;
+
 
 void setup() {
     deviceID = System.deviceID();       // get device ID
@@ -57,9 +73,16 @@ void setup() {
     pinMode(SOIL_SENSOR, INPUT);        // configures soil sensor as a input
     
     pinMode(LED, OUTPUT);
+    
+    //servo.attach(SERVO);                // attach servo to servo pin
 
-    // declare a Particle function so when the cloud sends the function "cloud" we call controlWaterValve
+    // declare a Particle function to manually control LED
     Particle.function("led", controlLED);
+    
+    servo_pos = 0;
+    // declare a Particle function to manually control water valve (servo)
+    Particle.function("water", controlServo);
+    Serial.println("I am done setting up");
 }
 
 void loop() {
@@ -93,8 +116,7 @@ void loop() {
 	// low value means there is a lot of moisture, high value means it's dry
 	soil_analog = analogRead(SOIL_SENSOR);
 	soil = (1.0 - (soil_analog / 4095.0)) * 100;
-	
-	
+
 	
 	// Send data to web app
 	if (nextTime > millis()) {
@@ -122,6 +144,44 @@ void loop() {
     Serial.println(response.body);
     Serial.println();
     
+    // Parse JSON string from response body
+    parser.clear();
+	parser.addString(response.body);
+    
+    // Test if parsing succeeds.
+    if (!parser.parse()) {
+		Serial.println("parsing failed test2");
+		return;
+	}
+	
+	parser.getOuterValueByKey("plant_id", plant_id);
+    parser.getOuterValueByKey("led_is_on", led_is_on);
+    parser.getOuterValueByKey("valve_is_auto", valve_is_auto);
+    
+    // Serials for debugging
+    Serial.printlnf("Plant ID is %d", plant_id);
+    Serial.printlnf("Is LED on: %d", led_is_on);
+    Serial.printlnf("Is valve auto: %d", valve_is_auto);
+    
+    if (!valve_is_auto)
+    {
+        parser.getOuterValueByKey("valve_manual_value", valve_manual_value);
+        parser.getOuterValueByKey("valve_remaining_time", valve_remaining_time);
+        
+        // Serials for debugging
+        Serial.printlnf("Valve Manual Value: %f", valve_manual_value);
+        Serial.printlnf("Valve Remaining Time: %f", valve_remaining_time);
+    }
+    else
+    {
+        parser.getOuterValueByKey("valve_auto_value", valve_auto_value);
+        
+        // Serial for debugging
+        Serial.printlnf("Valve Auto Value: %f", valve_auto_value);
+    }
+    Serial.println();
+    
+    
     nextTime = millis() + 10000;
     
     
@@ -136,7 +196,6 @@ void loop() {
             // based on soil moisture value, adjust servo position
             // report current state of servo back to web app
     
-
     // LED Control Code
         // For manual control:
             // recieve request from web app
@@ -169,3 +228,31 @@ int controlLED(String command) {
         return -1;
     }
 }
+
+// for debugging, type the following in a terminal (assuming Particle CLI is installed):
+    // particle call {device_id} water {command}, where {command} is an integer
+int controlServo(String command) {
+    Serial.println("Command is " + command);
+    servo_pos = command.toInt();
+    Serial.print("Servo pos at ");
+    Serial.println(servo_pos);
+    if (-1 < servo_pos < 180)
+    {
+        servo.attach(SERVO);
+        servo.write(servo_pos);
+        delay(300);
+        servo.detach();
+        Serial.println("Servo moved (plz)");
+        return servo_pos;
+    }
+    else
+    {
+        return -1;
+    }
+    
+}
+
+
+
+
+
