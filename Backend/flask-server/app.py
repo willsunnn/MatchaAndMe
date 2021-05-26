@@ -148,7 +148,6 @@ def send_data(plant_id):
 	l = request.args.get("light")
 	s = request.args.get("soil")
 
-	print(f"Recieved Data = t={t}, h={h}, l={l}, s={s}")
 	new_measurement = Measurement(plant_id=id, temp=t, humidity=h, light_level=l, soil_moisture=s)
 	db.session.add(new_measurement)
 	db.session.commit()

@@ -2,6 +2,7 @@ import React from 'react';
 import NavBarView from '../components/NavBar';
 import PlantView from '../components/PlantView';
 import DataView from '../components/DataView';
+import ControlView from '../components/ControlView';
 
 function get_plant(id, handler) {
 	const Http = new XMLHttpRequest();
@@ -78,6 +79,7 @@ class PlantViewPage extends React.Component {
 			<p>PlantView Page</p>
 			<PlantView plant={this.state.plant} />
 			<DataView data={this.state.data} />
+			<ControlView />
 		</div>)
 	}
 }
