@@ -1,5 +1,17 @@
 import React from 'react';
-import styles from '../css/dataview.module.css';
+import { withStyles } from "@material-ui/core";
+
+const styles = theme => ({
+	parentDiv: {
+		"display": "flex",
+		"alignItems": "center",
+		"justifyContent": "center",
+		"margin": "20px"
+	},
+	table: {
+		"border": "1px solid black"
+	}
+});
 
 class DataView extends React.PureComponent {
 	// construct with data props
@@ -11,7 +23,10 @@ class DataView extends React.PureComponent {
 	}
 
 	render() {
-		return (<table style={styles.table}>	
+		const { classes } = this.props;
+		return (
+		<div className={classes.parentDiv}>
+		<table className={classes.table}>	
 			<tr>
 				<th>Date and Time</th>
 				<th>Temperature (deg F)</th>
@@ -31,8 +46,9 @@ class DataView extends React.PureComponent {
 					</tr>	
 				)
 			}
-		</table>)
+		</table>
+		</div>)
 	}
 }
 
-export default DataView;
+export default withStyles(styles, { withTheme: true })(DataView);

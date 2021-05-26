@@ -3,6 +3,7 @@ import NavBarView from '../components/NavBar';
 import PlantView from '../components/PlantView';
 import DataView from '../components/DataView';
 import ControlView from '../components/ControlView';
+import { withStyles } from "@material-ui/core";
 
 function get_plant(id, handler) {
 	const Http = new XMLHttpRequest();
@@ -27,6 +28,23 @@ function get_data(id, handler) {
 	Http.open("GET", url, true);
 	Http.send();
 }
+
+const styles = theme => ({
+	parentDiv: {
+		"display": "flex",
+		"alignItems": "center",
+		"justifyContent": "center"
+	},
+	leftColumn: {
+		"float": "left",
+		"width":"33%"
+	},
+	rightColumn: {
+		"float": "right",
+		"width":"66%"
+	},
+	
+});
 
 class PlantViewPage extends React.Component {
 
@@ -54,13 +72,11 @@ class PlantViewPage extends React.Component {
 	handle_plant_request(plant_data) {
 		const parsed = JSON.parse(plant_data);
 		this.setState({plant: parsed});
-		console.log(this.state)
 	}
 
 	handle_data_request(data) {
 		const parsed = JSON.parse(data);
 		this.setState({data: parsed});
-		console.log(this.state)
 	}
 
 	get_plant_name() {
@@ -72,16 +88,21 @@ class PlantViewPage extends React.Component {
 	}
  
 	render() {
-		console.log(this.get_plant_name())
+		const { classes } = this.props;
 		return (
 		<div>
 			<NavBarView title={this.get_plant_name()}/>
-			<p>PlantView Page</p>
-			<PlantView plant={this.state.plant} />
-			<DataView data={this.state.data} />
-			<ControlView />
+			<div class="row">
+				<div className={classes.leftColumn}>
+					<PlantView plant={this.state.plant} />
+					<ControlView />
+				</div>
+				<div className={classes.rightColumn}>
+					<DataView data={this.state.data} />
+				</div>
+			</div>
 		</div>)
 	}
 }
 
-export default PlantViewPage;
+export default withStyles(styles, { withTheme: true })(PlantViewPage);
