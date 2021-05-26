@@ -34,6 +34,7 @@ float soil;                 // soil moisture value as %
 #define SERVO D2            // servo pin
 Servo servo;                // create servo object
 int servo_pos;
+int prev_servo_pos;
 
 unsigned int nextTime = 0;          // Next time to contact the server
 HttpClient http;
@@ -85,8 +86,9 @@ void setup() {
     
     // declare a Particle function to manually control water valve (servo)
     Particle.function("water", controlServo);
-    Serial.println("I am done setting up");
-    Serial.println();
+    
+    // declare a Particle function to immediately update control scheme
+    Particle.function("update", requestControlUpdate);
 
 	// initialize control scheme defaults
 	control.led_is_on = false;
@@ -94,9 +96,28 @@ void setup() {
 	control.valve_auto_value = 0;
 	control.valve_end_time = millis();
 	control.valve_manual_value = 0;
+	
+	Serial.println("I am done setting up");
+    Serial.println();
 }
 
 void loop() {
+    
+    // read analog sensor values for temp, hum, light, and soil moisture
+    readAnalogSensors();
+    
+    // Water Valve (Servo) Control Code
+    update_servo();
+    
+    // LED Control Code
+    update_led();
+
+	// Send data to web app
+    sendDataIfTime();
+}
+
+void readAnalogSensors()
+{
     // Humidity and Temperature Reading Code //
     
     // Call rht.update() to get new humidity and temperature values from the sensor.
@@ -125,16 +146,6 @@ void loop() {
 	// low value means there is a lot of moisture, high value means it's dry
 	int soil_analog = analogRead(SOIL_SENSOR);
 	soil = (1.0 - (soil_analog / 4095.0)) * 100;
-    
-    // Water Valve (Servo) Control Code
-    update_servo();
-    
-    // LED Control Code
-    update_led();
-
-	
-	// Send data to web app
-    sendDataIfTime();
 }
 
 void sendDataIfTime() {
@@ -197,7 +208,7 @@ int controlServo(String command) {
     
 }
 
-int request_control_update() {
+int requestControlUpdate(String command) {
     sprintf(buffer, "/get-control/1");
     request.path = buffer;
     
@@ -270,16 +281,17 @@ void update_led() {
 	digitalWrite(LED, output);
 }
 
-// For Manual control:
-// 		sets the servo to the value for a specified amount of time
 // For automatic control:
 // 		Sets a target soil moisture and adjusts the servo to meet that soil moisture
+// For Manual control:
+// 		sets the servo to the value for a specified amount of time
 void update_servo() {
+    // automatically controlling water valve
     if (control.valve_is_auto_control) {
         // if current soil moisture is greater than target value, then don't need to open water valve
         if ((soil / 100.0) > control.valve_auto_value) // divided soil by 100 because soil is expressed as %
         {
-            open_valve(0);		// close the valve
+            close_valve();		// close the valve
         }
         else
         {
@@ -287,7 +299,8 @@ void update_servo() {
             open_valve(valve_soil_diff);    // make valve strength proportional to difference from current soil moisture to desired moisture
         }
     }
-    else    // manually controlling water valve
+    // manually controlling water valve
+    else    
     {
 		long currTime = millis();
 		float strength = control.valve_manual_value;
@@ -299,11 +312,16 @@ void update_servo() {
 }
 
 void open_valve(float strength) {
-    servo.attach(SERVO);
+    prev_servo_pos = servo_pos;
     servo_pos = strength * 179;
-    servo.write(servo_pos);
-    delay(300);
-    servo.detach();
+    if (servo_pos != prev_servo_pos)
+    {
+        servo.attach(SERVO);
+        servo.write(servo_pos);
+        delay(300);
+        servo.detach();
+    }
+    
 }
 
 void close_valve() {
