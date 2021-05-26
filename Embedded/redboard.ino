@@ -38,9 +38,10 @@ Servo servo;                // create servo object
 int servo_pos;
 int servo_time;
 
-unsigned int nextTime = 0;    // Next time to contact the server
+unsigned int nextTime = 0;          // Next time to contact the server
 HttpClient http;
 String hostname = "73.170.193.51";
+char buffer[200];                   // buffer used for specifying url path
 
 // Headers currently need to be set at init, usefulfor API keys etc.
 http_header_t headers[] = {
@@ -55,12 +56,18 @@ http_response_t response;
 
 // Json parser
 JsonParserStatic<256, 20> parser;
-int plant_id;
+int plant_id = 1;
 bool led_is_on;
 bool valve_is_auto;
 float valve_manual_value;
 float valve_remaining_time;
 float valve_auto_value;
+
+float valve_soil_diff;
+long current_time;
+long valve_time;
+float prev_valve_remaining_time;
+bool valve_closed;
 
 
 void setup() {
@@ -74,18 +81,24 @@ void setup() {
     
     pinMode(LED, OUTPUT);
     
-    //servo.attach(SERVO);                // attach servo to servo pin
+    request.hostname = hostname;
+    request.port = 5000;
 
     // declare a Particle function to manually control LED
     Particle.function("led", controlLED);
     
     servo_pos = 0;
+    close_valve();  // initialize water valve to be closed;
+    
     // declare a Particle function to manually control water valve (servo)
     Particle.function("water", controlServo);
     Serial.println("I am done setting up");
+    Serial.println();
 }
 
 void loop() {
+    current_time = millis();
+    prev_valve_remaining_time = valve_remaining_time;
 
     // Humidity and Temperature Reading Code //
     
@@ -98,7 +111,6 @@ void loop() {
 	{
 		hum = rht.humidity(); // get humidity
 		temp = rht.tempF();   // get temperature (in F)
-	
 	}
 	else
 	{
@@ -116,6 +128,43 @@ void loop() {
 	// low value means there is a lot of moisture, high value means it's dry
 	soil_analog = analogRead(SOIL_SENSOR);
 	soil = (1.0 - (soil_analog / 4095.0)) * 100;
+	
+	// Automatic Actuator Code //
+    
+    // Water Valve (Servo) Control Code
+        // For manual control:
+    update_servo();
+    
+    if (valve_remaining_time != prev_valve_remaining_time)
+    {
+        valve_time = millis() + (valve_remaining_time * 1000);
+    }
+    if ((valve_remaining_time) == 0 || (current_time > valve_time))
+    {
+        if (!valve_closed) 
+        { 
+            Serial.println("Closing Valve");
+            close_valve();
+            valve_closed = true;
+        }
+    }
+            // recieve request from web app
+            // adjust servo position based on request
+            // report current state of servo back to web app
+        // For automatic control:
+    
+            // based on soil moisture value, adjust servo position
+            // report current state of servo back to web app
+    
+    // LED Control Code
+    update_led();
+        // For manual control:
+            // recieve request from web app
+            // turn on/off LED based on request
+            // report current state of LED back to web app
+        // For automatic control:
+            // based on light level value, adjust LED if necessary
+            // report current state of LED back to web app
 
 	
 	// Send data to web app
@@ -129,13 +178,79 @@ void loop() {
 	Serial.printlnf("Light Level: %f %%", light);
 	Serial.printlnf("Soil Moisture: %f %%", soil);
     
-	request.hostname = hostname;
-    request.port = 5000;
-    char buffer[200];
+    // build url path for sending sensor data
     sprintf(buffer, "/send-data/1?temp=%4.2f&hum=%4.2f&light=%4.2f&soil=%4.2f", temp, hum, light, soil);
     request.path = buffer;
     
     // Get request
+    get_http_request();
+    
+    // Parse JSON string from response body
+    parse_json(response.body);
+    
+    nextTime = millis() + 10000;
+    
+	
+	//delay(5000);
+	
+}
+
+// Particle Cloud function to manually control the LED
+// for debugging, type the following in a terminal (assuming Particle CLI is installed):
+    // particle call {device_id} led {command}
+int controlLED(String command) {
+    
+    // build url path for getting json values
+    sprintf(buffer, "/get-control/1");
+    request.path = buffer;
+    
+    get_http_request();
+    parse_json(response.body);
+    
+    update_led();
+    
+    return 1;
+}
+
+
+// Particle Cloud function to manually control the water valve (servo)
+// for debugging, type the following in a terminal (assuming Particle CLI is installed):
+    // particle call {device_id} water {command}, where {command} is an integer
+int controlServo(String command) {
+    
+    // build url path for getting json values
+    sprintf(buffer, "/get-control/1");
+    request.path = buffer;
+    
+    get_http_request();
+    parse_json(response.body);
+    
+    update_servo();
+    
+    return 1;
+    
+}
+
+void open_valve(float strength)
+{
+    servo.attach(SERVO);
+    servo_pos = strength * 179;
+    servo.write(servo_pos);
+    delay(300);
+    servo.detach();
+}
+
+// helper function that closes the water valve by writing the servo angle to 0
+void close_valve()
+{
+    servo.attach(SERVO);
+    servo.write(0);
+    delay(300);
+    servo.detach();
+}
+
+void get_http_request()
+{
     http.get(request, response, headers);
     Serial.print("Application>\tResponse status: ");
     Serial.println(response.status);
@@ -143,17 +258,20 @@ void loop() {
     Serial.print("Application>\tHTTP Response Body:");
     Serial.println(response.body);
     Serial.println();
-    
-    // Parse JSON string from response body
+}
+
+void parse_json(String json)
+{
     parser.clear();
-	parser.addString(response.body);
+	parser.addString(json);
     
     // Test if parsing succeeds.
     if (!parser.parse()) {
-		Serial.println("parsing failed test2");
+		Serial.println("parsing failed");
 		return;
 	}
 	
+	// Get Json Values
 	parser.getOuterValueByKey("plant_id", plant_id);
     parser.getOuterValueByKey("led_is_on", led_is_on);
     parser.getOuterValueByKey("valve_is_auto", valve_is_auto);
@@ -180,79 +298,47 @@ void loop() {
         Serial.printlnf("Valve Auto Value: %f", valve_auto_value);
     }
     Serial.println();
-    
-    
-    nextTime = millis() + 10000;
-    
-    
-    // Actuator Code //
-    
-    // Water Valve (Servo) Control Code
-        // For manual control:
-            // recieve request from web app
-            // adjust servo position based on request
-            // report current state of servo back to web app
-        // For automatic control:
-            // based on soil moisture value, adjust servo position
-            // report current state of servo back to web app
-    
-    // LED Control Code
-        // For manual control:
-            // recieve request from web app
-            // turn on/off LED based on request
-            // report current state of LED back to web app
-        // For automatic control:
-            // based on light level value, adjust LED if necessary
-            // report current state of LED back to web app
-	
-	delay(5000);
-	
 }
 
-
-// for debugging, type the following in a terminal (assuming Particle CLI is installed):
-    // particle call {device_id} led {command}
-int controlLED(String command) {
-    if (command == "on")
+void update_led()
+{
+    if (led_is_on)
     {
         digitalWrite(LED, HIGH);
-        return 1;
     }
-    else if (command == "off")
+    else
     {
         digitalWrite(LED, LOW);
-        return 1;
-    }
-    else
-    {
-        return -1;
     }
 }
 
-// for debugging, type the following in a terminal (assuming Particle CLI is installed):
-    // particle call {device_id} water {command}, where {command} is an integer
-int controlServo(String command) {
-    Serial.println("Command is " + command);
-    servo_pos = command.toInt();
-    Serial.print("Servo pos at ");
-    Serial.println(servo_pos);
-    if (-1 < servo_pos < 180)
+void update_servo()
+{
+    if (valve_is_auto)
     {
-        servo.attach(SERVO);
-        servo.write(servo_pos);
-        delay(300);
-        servo.detach();
-        Serial.println("Servo moved (plz)");
-        return servo_pos;
+        // if current soil moisture is greater than target value, then don't need to open water valve
+        if ((soil / 100) > valve_auto_value) // divided soil by 100 because soil is expressed as %
+        {
+            close_valve();
+        }
+        else
+        {
+            valve_soil_diff = valve_auto_value - (soil / 100);
+            open_valve(valve_soil_diff);    // make valve strength proportional to difference from current soil moisture to desired moisture
+            valve_closed = false;
+        }
     }
-    else
+    else    // manually controlling water valve
     {
-        return -1;
+        if (valve_remaining_time > 0)
+        {
+            open_valve(valve_manual_value);
+            current_time = millis();
+            valve_time = millis() + (valve_remaining_time * 1000);
+            valve_closed = false;
+        }
     }
-    
 }
-
-
 
 
 
