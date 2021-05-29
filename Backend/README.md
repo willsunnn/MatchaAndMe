@@ -65,6 +65,25 @@ The system comprises of 3 components
 	Returns:
 	- Returns the plant's ID and name 
 
+### Add Particle Id
+	This sets a plant's Particle ID and Particle Access Token and saves it in the database \
+	the way control schemes work without this function is that the plant would only update its light and valve status whenever it sends data to the server. Since it sends data every 10 seconds, this could cause a latency of up to 10 seconds in controlling the plant. Particle exposes an endpoint that allows a user to call a function on the redboard if they have the Particle ID and Particle Access Token. \
+	Therefore, our database can stored the Particle ID and Particle Access Token (provided by this function), and tell the particle to update its control state everytime a control signal is sent. (see definition and usages of ping_particle_to_update_control_scheme in app.py)
+
+	Endpoint:
+	- <IP_ADDRESS>:5000/add-particle-id/<plant_id>			(GET)
+
+	Query Args
+	- particle_id (String)
+	- access_token (String)
+
+	Example:
+	- <IP_ADDRESS>:5000/add-particle-id/1?particle_id=xxxxxxxxxxxxxx&?access_token=xxxxxxxxxxxxxxxxxx
+
+	Returns:
+	- success
+
+
 ## Endpoints to add/retrieve data points
 
 ### Send Data

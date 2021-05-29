@@ -21,7 +21,7 @@ function get_plant_list(handler) {
 	const Http = new XMLHttpRequest();
 	const url = '/get-plants';
 	Http.onreadystatechange = function() {
-		if(this.readyState==4 && this.status==200) {
+		if(this.readyState===4 && this.status===200) {
 			handler(Http.responseText);
 		}
 	}

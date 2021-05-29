@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 import json
+import urllib.request
 
 # setup Flask
 app = Flask(__name__)
@@ -24,6 +25,9 @@ class Plant(db.Model):
 	plant_name = db.Column(db.String(20), unique=False, nullable=False)
 	measurements = db.relationship('Measurement', backref='plant', lazy=True)
 	control = db.relationship('ControlScheme', uselist=False, backref='plant', lazy=True)
+
+	particle_device_id = db.Column(db.String(50), nullable=True, default=None)
+	particle_device_access_token = db.Column(db.String(50), nullable=True, default=None)
 
 	def __repr__(self):
 		obj = {"plant_name":self.plant_name, "id":self.plant_id} 
@@ -129,6 +133,22 @@ def get_plant(plant_id):
 	else:
 		return str(plant)
 
+@app.route("/add-particle-id/<plant_id>")
+def add_particle_id(plant_id):
+	id = int(plant_id)
+	plant: Plant = Plant.query.get(plant_id)
+	if plant is None:
+		add_plant(id, "new plant")
+		plant = Plant.query.get(plant_id)
+	
+	particle_id = request.args.get("particle_id")
+	access_token = request.args.get("access_token")
+
+	plant.particle_device_id = particle_id
+	plant.particle_device_access_token = access_token
+	db.session.commit()
+	return "success"
+
 
 
 
@@ -142,6 +162,7 @@ def send_data(plant_id):
 	plant: Plant = Plant.query.get(plant_id)
 	if plant is None:
 		add_plant(id, "new plant")
+		plant = Plant.query.get(plant_id)
 
 	t = request.args.get("temp")
 	h = request.args.get("hum")
@@ -168,6 +189,22 @@ def get_data(plant_id):
 """
 	Endpoints to update/retrieve control schemes
 """
+
+# This function is used to ping the particle so that the particle
+# will perform a /get-control<plant_id>/ request
+# this will force the particle to update to the most recent control
+# scheme in in the database to ensure that controls are responsive
+def ping_particle_to_update_control_scheme(plant_id):
+	plant: Plant = Plant.query.get(plant_id)
+	if plant is None or plant.particle_device_id is None or plant.particle_device_access_token is None:
+		return "could not find plant, or plant does not have device ID / access token"
+	ping_url = f"https://api.particle.io/v1/devices/{plant.particle_device_id}/update?access_token={plant.particle_device_access_token}"
+	data = urllib.parse.urlencode({'message':"pinging particle"})		# this payload doesn't actually have any effect, but it needs to not be empty
+	data = data.encode('ascii')
+	req = urllib.request.Request(ping_url, data)
+	with urllib.request.urlopen(req) as response:
+		print(response.read())
+
 @app.route("/get-control/<plant_id>")
 def get_control(plant_id):
 	id = int(plant_id)
@@ -189,6 +226,7 @@ def update_led_control(plant_id):
 	else:
 		plant.control.led_is_on = parse_boolean(request.args.get("is_on"))
 		db.session.commit()
+		ping_particle_to_update_control_scheme(id)
 		return str(plant.control)
 
 @app.route("/update-valve-control/<plant_id>")
@@ -207,4 +245,5 @@ def update_valve_control(plant_id):
 			plant.control.valve_manual_start = datetime.datetime.now()
 			plant.control.valve_manual_duration = int(request.args.get('valve_manual_duration'))
 		db.session.commit()
+		ping_particle_to_update_control_scheme(id)
 		return str(plant.control)

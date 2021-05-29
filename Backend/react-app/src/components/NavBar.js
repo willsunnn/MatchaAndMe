@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, AppBar, Toolbar, List, ListItem, ListItemText, Typography } from "@material-ui/core"
-import { makeStyles, withStyles } from "@material-ui/core"
+import { withStyles } from "@material-ui/core"
 import matchaImg from '../resources/matcha.png'
 
 const navLinks = [

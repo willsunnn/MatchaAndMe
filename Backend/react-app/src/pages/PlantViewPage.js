@@ -9,7 +9,7 @@ function get_plant(id, handler) {
 	const Http = new XMLHttpRequest();
 	const url = '/get-plant/'+id;
 	Http.onreadystatechange = function() {
-		if(this.readyState==4 && this.status==200) {
+		if(this.readyState===4 && this.status===200) {
 			handler(Http.responseText);
 		}
 	}
@@ -21,7 +21,7 @@ function get_data(id, handler) {
 	const Http = new XMLHttpRequest();
 	const url = '/get-data/'+id;
 	Http.onreadystatechange = function() {
-		if(this.readyState==4 && this.status==200) {
+		if(this.readyState===4 && this.status===200) {
 			handler(Http.responseText);
 		}
 	}
