@@ -17,18 +17,6 @@ function get_plant(id, handler) {
 	Http.send();
 }
 
-function get_data(id, handler) {
-	const Http = new XMLHttpRequest();
-	const url = '/get-data/'+id;
-	Http.onreadystatechange = function() {
-		if(this.readyState===4 && this.status===200) {
-			handler(Http.responseText);
-		}
-	}
-	Http.open("GET", url, true);
-	Http.send();
-}
-
 const styles = theme => ({
 	parentDiv: {
 		"display": "flex",
@@ -56,27 +44,17 @@ class PlantViewPage extends React.Component {
 
 		this.state = {
 			plant: null,
-			data: [],
 			id: id
 		};
 
 		// asynchronously fetch plant name
 		this.handle_plant_request = this.handle_plant_request.bind(this);
 		get_plant(this.state.id, this.handle_plant_request);
-
-		// asynchronously fetch data points
-		this.handle_data_request = this.handle_data_request.bind(this);
-		get_data(this.state.id, this.handle_data_request);
 	}
 
 	handle_plant_request(plant_data) {
 		const parsed = JSON.parse(plant_data);
 		this.setState({plant: parsed});
-	}
-
-	handle_data_request(data) {
-		const parsed = JSON.parse(data);
-		this.setState({data: parsed});
 	}
 
 	get_plant_name() {
@@ -98,7 +76,7 @@ class PlantViewPage extends React.Component {
 					<ControlView />
 				</div>
 				<div className={classes.rightColumn}>
-					<DataView data={this.state.data} />
+					<DataView plant_id={this.state.id} />
 				</div>
 			</div>
 		</div>)

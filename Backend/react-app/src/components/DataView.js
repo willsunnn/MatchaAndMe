@@ -13,7 +13,39 @@ const styles = theme => ({
 	}
 });
 
+function get_data(id, handler) {
+	const Http = new XMLHttpRequest();
+	const url = '/get-data/'+id;
+	Http.onreadystatechange = function() {
+		if(this.readyState===4 && this.status===200) {
+			handler(Http.responseText);
+		}
+	}
+	Http.open("GET", url, true);
+	Http.send();
+}
+
 class DataView extends React.PureComponent {
+	constructor(props) {
+		super(props);
+		
+		this.state = {
+			id: props.plant_id,
+			data: []
+		};
+
+		// asynchronously fetch data points
+		this.handle_data_request = this.handle_data_request.bind(this);
+		get_data(this.state.id, this.handle_data_request);
+
+	}
+
+	handle_data_request(data) {
+		const parsed = JSON.parse(data);
+		this.setState({data: parsed});
+	}
+
+
 	// construct with data props
 	// data is an array of observation objects
 
@@ -35,7 +67,7 @@ class DataView extends React.PureComponent {
 				<th>Soil Moisture (%)</th>
 			</tr>
 			{
-				this.props.data.map(
+				this.state.data.map(
 					data => 
 					<tr>
 						<td>{this.convertDateTime(data.datetime)}</td>
