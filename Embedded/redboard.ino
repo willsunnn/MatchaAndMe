@@ -97,6 +97,9 @@ void setup() {
 	control.valve_end_time = millis();
 	control.valve_manual_value = 0;
 	
+	// initialize particle device in central server
+	add_device_id(deviceID, ACCESS_TOKEN);
+	
 	Serial.println("I am done setting up");
     Serial.println();
 }
@@ -215,6 +218,14 @@ int requestControlUpdate(String command) {
     get_http_request();
     parse_json(response.body);
 	return 1;
+}
+
+void add_device_id(String devID, String aT)
+{
+    sprintf(buffer, "/add-particle-id/1?particle_id="+devID+"&access_token="+aT);
+    request.path = buffer;
+    
+    get_http_request();
 }
 
 
