@@ -110,11 +110,15 @@ The system comprises of 3 components
 	Endpoint:
 	- <IP_ADDRESS>:5000/get-data/<plant_id>			(GET)
 
+	Query Args:
+	- start (ISO Date) (Optional, but strongly recommended)
+	- date (ISO Date) (Optional, but strongly recommended)
+
 	Example:
-	- <IP_ADDRESS>:5000/get-data/1
+	- <IP_ADDRESS>:5000/get-data/1?start=2021-05-29T21:00:00&end=2021-05-29T21:05:00
 
 	Returns:
-	- Returns a list of all the plant's data points
+	- Returns a list of all the plant's data points between the two specified datetimes
 
 ## Endpoints to update/retrieve control schemes
 

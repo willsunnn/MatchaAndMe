@@ -177,11 +177,16 @@ def send_data(plant_id):
 @app.route("/get-data/<plant_id>")
 def get_data(plant_id):
 	id = int(plant_id)
-	plant: Plant = Plant.query.get(plant_id)
-	if plant is None:
-		return f"Could not find plant with ID {id}"
-	else:
-		return str(plant.measurements)
+	start = request.args.get("start")
+	end = request.args.get("end")
+	measurements = Measurement.query.filter(Measurement.plant_id == id)
+	if start is not None:
+		start = datetime.datetime.fromisoformat(start)
+		measurements = measurements.filter(Measurement.date_time >= start)
+	if end is not None:
+		end = datetime.datetime.fromisoformat(end)
+		measurements = measurements.filter(Measurement.date_time <= end)
+	return str(measurements.all())
 
 
 
