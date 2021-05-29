@@ -73,7 +73,7 @@ class PlantViewPage extends React.Component {
 			<div class="row">
 				<div className={classes.leftColumn}>
 					<PlantView plant={this.state.plant} />
-					<ControlView />
+					<ControlView plant_id={this.state.id}/>
 				</div>
 				<div className={classes.rightColumn}>
 					<DataView plant_id={this.state.id} />
