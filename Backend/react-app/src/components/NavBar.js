@@ -24,7 +24,11 @@ const styles = theme => ({
 		textDecoration: `none`,
 		textTransform: `uppercase`,
 		color: `black`
-	}
+	},
+	logo: {
+		maxHeight: "80px",
+		maxWidth: "80px"
+	},
 });
 
 class NavBarView extends React.PureComponent {
@@ -34,6 +38,7 @@ class NavBarView extends React.PureComponent {
 		return (
 			<AppBar position="static" className={classes.navbar}>
 				<Toolbar>
+					<img src={matchaImg} alt="logo" className={classes.logo}/>
 					<Grid container justify="flex-start">
 						<Typography variant="h6" className={classes.title}>
 							{this.props.title}
