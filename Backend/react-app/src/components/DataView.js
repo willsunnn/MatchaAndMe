@@ -95,7 +95,6 @@ class DataView extends React.PureComponent {
 
 	// given a JSON array, reorganize the array to the required format for nivo Line Graph
 	translate_data_format(data) {
-
 		// skips some values of data as there are too many
 		const num_data_points = 200;
 		const num_to_skip = Math.max(Math.floor(data.length / num_data_points),1);
@@ -139,18 +138,6 @@ class DataView extends React.PureComponent {
 		return array
 	}
 
-	get_x_grid_values()
-	{
-		if (typeof this.state.data[0].data[0] !== "undefined")
-		{
-			var first = this.state.data[0]['data'][0]['x']
-			var lastData = this.state.data[0]['data']
-			var last = lastData[lastData.length-1]['x']
-			return [first, last]
-		}
-		else { return [this.convertDateTime(get_start_time(this.state.date)), this.convertDateTime(get_end_time(this.state.date))] }
-	}
-
 	// construct with data props
 	// data is an array of observation objects
 
@@ -186,7 +173,6 @@ class DataView extends React.PureComponent {
 	render_graph() {
 		const startDate = this.convertDateTime(get_start_time(this.state.date))
 		const endDate = this.convertDateTime(get_end_time(this.state.date))
-		var firstLast = [startDate, endDate]//this.get_x_grid_values()
 		return (
 			<ResponsiveLine
 				data={this.state.data}
