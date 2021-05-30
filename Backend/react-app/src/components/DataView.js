@@ -156,7 +156,8 @@ class DataView extends React.PureComponent {
 
 	convertDateTime(utc_datetime) {
 		var date = new Date(utc_datetime + 'Z');
-		return date.toLocaleTimeString();
+		const string = ""+date.getUTCFullYear()+"-"+(date.getUTCMonth()+1)+"-"+date.getUTCDate()+" "+date.getUTCHours()+":"+date.getUTCMinutes()+":"+date.getUTCSeconds();
+		return string
 	}
 
 	render() {
@@ -183,14 +184,20 @@ class DataView extends React.PureComponent {
 	}
 
 	render_graph() {
-		var firstLast = this.get_x_grid_values()
 		const startDate = this.convertDateTime(get_start_time(this.state.date))
 		const endDate = this.convertDateTime(get_end_time(this.state.date))
+		var firstLast = [startDate, endDate]//this.get_x_grid_values()
 		return (
 			<ResponsiveLine
 				data={this.state.data}
 				margin={{ top: 50, right: 110, bottom: 50, left: 110 }}
-				xScale={{ type: 'point', min: startDate, max: endDate}}
+				xScale={{
+					type: "time",
+					format: "%Y-%m-%d %H:%M:%S",
+					precision: "second",
+					min: startDate,
+					max: endDate
+				  }}
 				yScale={{ type: 'linear', min: '0', max: '100', stacked: false, reverse: false }}
 				yFormat=" >-.2f"
 				axisTop={null}
@@ -206,10 +213,7 @@ class DataView extends React.PureComponent {
 				}}
 				axisBottom={{
 					orient: 'bottom',
-					tickSize: 5,
-					tickValues: firstLast,
-					tickPadding: 5,
-					tickRotation: 0,
+					format: "%H:%M",
 					legend: 'Time',
 					legendOffset: 36,
 					legendPosition: 'middle'
