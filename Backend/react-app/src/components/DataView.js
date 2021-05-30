@@ -225,30 +225,6 @@ class DataView extends React.PureComponent {
 								}
 							}
 						]
-					},
-					{
-						anchor: 'bottom-right',
-						direction: 'row',
-						justify: false,
-						translateX: 100,
-						translateY: 0,
-						itemsSpacing: 20,
-						itemDirection: 'left-to-right',
-						itemWidth: 80,
-						itemHeight: 20,
-						itemOpacity: 0.75,
-						symbolSize: 12,
-						symbolShape: 'circle',
-						symbolBorderColor: 'rgba(0, 0, 0, .5)',
-						effects: [
-							{
-								on: 'hover',
-								style: {
-									itemBackground: 'rgba(0, 0, 0, .03)',
-									itemOpacity: 1
-								}
-							}
-						]
 					}
 				]}
 			/>
