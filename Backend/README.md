@@ -199,6 +199,7 @@ In order to run the server, these are the required steps
    1) go to flask-server directory
    2) create and activate virtual environment (optional)
       1) venv/scripts/activate
+      2) Note: You must have Python 3.7 or higher or the web app won't work!
    3) install pip requirements
       1) pip install requirements.txt
    4) Create SQL Database Instance
