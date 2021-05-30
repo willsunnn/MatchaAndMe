@@ -1,6 +1,7 @@
 import React from 'react';
-import { withStyles } from "@material-ui/core";
+import { withStyles, Typography } from "@material-ui/core";
 import { ResponsiveLine } from '@nivo/line'
+import Button from '@material-ui/core/Button';
 
 const styles = theme => ({
 	parentDiv: {
@@ -15,7 +16,7 @@ const styles = theme => ({
 	}
 });
 
-function get_data(id, handler) {
+function get_data(id, date, handler) {
 	const Http = new XMLHttpRequest();
 	const url = '/get-data/' + id;
 	Http.onreadystatechange = function () {
@@ -34,15 +35,17 @@ class DataView extends React.PureComponent {
 		this.state = {
 			id: props.plant_id,
 			data: [],
-			loaded: false
+			loaded: false,
+			date: new Date()
 		};
 
 		this.translate_data_format = this.translate_data_format.bind(this);
+		this.get_next_day = this.get_next_day.bind(this);
+		this.get_prev_day = this.get_prev_day.bind(this);
 
 		// asynchronously fetch data points
 		this.handle_data_request = this.handle_data_request.bind(this);
-		get_data(this.state.id, this.handle_data_request);
-
+		get_data(this.state.id, this.state.date, this.handle_data_request);
 	}
 
 	handle_data_request(data) {
@@ -50,9 +53,34 @@ class DataView extends React.PureComponent {
 		this.setState({ data: this.translate_data_format(parsed), loaded: true});
 	}
 
+	get_next_day() {
+		var d = this.state.date;
+		d.setDate(d.getDate() + 1);
+		this.setState({date: new Date(d.getTime())});		// creates a copy of date
+	}
+
+	get_prev_day() {
+		var d = this.state.date;
+		d.setDate(d.getDate() - 1);
+		this.setState({date: new Date(d.getTime())});		// creates a copy of date
+	}
+
 	// given a JSON array, reorganize the array to the required format for nivo Line Graph
 	translate_data_format(data) {
 
+		// skips some values of data as there are too many
+		const num_data_points = 200;
+		const num_to_skip = Math.floor(data.length / num_data_points);
+		var new_data = []
+		for(var i=0; i<data.length; i++) {
+			if(i%num_to_skip == 0) {
+				new_data.push(data[i]);
+			}
+		}
+		data = new_data;
+
+		// convert the format from list of observations to the format required
+		// by Responsive Line
 		var soil = {id: "Soil Moisture"}
 		var lightLevel = {id: "Light Level"}
 		var humidity = {id: "Humidity"}
@@ -89,7 +117,6 @@ class DataView extends React.PureComponent {
 			var first = this.state.data[0]['data'][0]['x']
 			var lastData = this.state.data[0]['data']
 			var last = lastData[lastData.length-1]['x']
-			console.log([first,last])
 			return [first, last]
 		}
 		else { return [0,1] }
@@ -105,16 +132,24 @@ class DataView extends React.PureComponent {
 
 	render() {
 		const { classes } = this.props;
-		console.log(this.state.data)
-		var cool = this.state.data[0]
-		if (this.state.loaded) {
-			console.log(cool)
-			console.log(cool['data'])
-		}
 		return (
-			<div className={classes.parentDiv}>
-				{this.render_graph()}
-
+			<div>
+				<div>
+					<Typography variant="h6">
+						{this.state.date.toUTCString()}
+					</Typography>
+				</div>
+				<div className={classes.parentDiv}>
+					{this.render_graph()}
+				</div>
+				<div>
+					<Button onClick={this.get_prev_day} color="secondary">
+						Show Previous Day
+					</Button>
+					<Button onClick={this.get_next_day} color="secondary">
+						Show Next Day
+					</Button>
+				</div>
 			</div>)
 	}
 
