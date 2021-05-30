@@ -66,7 +66,7 @@ class DataView extends React.PureComponent {
 		for(var i = 0; i < data.length; i++) {
 			var data_point = data[i];
 
-			var dt = data_point.datetime
+			var dt = this.convertDateTime(data_point.datetime)
 			humidity_data.push({x: dt, y: data_point.humidity})
 			light_data.push({x: dt, y: data_point.light})
 			soil_data.push({x: dt, y: data_point.soil_moisture})
@@ -119,18 +119,21 @@ class DataView extends React.PureComponent {
 	}
 
 	render_graph() {
+		var firstLast = this.get_x_grid_values()
+
 		return (
 			<ResponsiveLine
 				data={this.state.data.slice(0,3)}
 				margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
 				xScale={{ type: 'point' }}
-				yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
+				yScale={{ type: 'linear', min: '0', max: '100', stacked: false, reverse: false }}
 				yFormat=" >-.2f"
 				axisTop={null}
 				axisRight={null}
 				axisBottom={{
 					orient: 'bottom',
 					tickSize: 5,
+					tickValues: firstLast,
 					tickPadding: 5,
 					tickRotation: 0,
 					legend: 'Time',
@@ -140,6 +143,7 @@ class DataView extends React.PureComponent {
 				axisLeft={{
 					orient: 'left',
 					tickSize: 5,
+					tickValues: [0, 25, 50, 75, 100],
 					tickPadding: 5,
 					tickRotation: 0,
 					legend: 'Percentage',
@@ -153,13 +157,9 @@ class DataView extends React.PureComponent {
 				pointLabelYOffset={-12}
 				areaOpacity={0.3}
 				useMesh={true}
-				//gridXValues={this.get_x_grid_values()}
-				//enableGridX={true}
-				//gridYValues={[0,0.25,0.50,0.75,1]}
-				//enableGridY={true}
 				legends={[
 					{
-						anchor: 'bottom-right',
+						anchor: 'bottom-left',
 						direction: 'column',
 						justify: false,
 						translateX: 100,
