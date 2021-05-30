@@ -123,13 +123,22 @@ class DataView extends React.PureComponent {
 
 		return (
 			<ResponsiveLine
-				data={this.state.data.slice(0,3)}
-				margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+				data={this.state.data}
+				margin={{ top: 50, right: 110, bottom: 50, left: 110 }}
 				xScale={{ type: 'point' }}
 				yScale={{ type: 'linear', min: '0', max: '100', stacked: false, reverse: false }}
 				yFormat=" >-.2f"
 				axisTop={null}
-				axisRight={null}
+				axisRight={{
+						orient: 'right',
+						tickSize: 5,
+						tickValues: [0, 25, 50, 75, 100, 125],
+						tickPadding: 5,
+						tickRotation: 0,
+						legend: 'Degrees (Fahrenheit)',
+						legendOffset: 36,
+						legendPosition: 'middle'
+				}}
 				axisBottom={{
 					orient: 'bottom',
 					tickSize: 5,
@@ -162,9 +171,33 @@ class DataView extends React.PureComponent {
 						anchor: 'bottom-left',
 						direction: 'column',
 						justify: false,
-						translateX: 100,
+						translateX: -100,
 						translateY: 0,
 						itemsSpacing: 0,
+						itemDirection: 'left-to-right',
+						itemWidth: 80,
+						itemHeight: 20,
+						itemOpacity: 0.75,
+						symbolSize: 12,
+						symbolShape: 'circle',
+						symbolBorderColor: 'rgba(0, 0, 0, .5)',
+						effects: [
+							{
+								on: 'hover',
+								style: {
+									itemBackground: 'rgba(0, 0, 0, .03)',
+									itemOpacity: 1
+								}
+							}
+						]
+					},
+					{
+						anchor: 'bottom-right',
+						direction: 'row',
+						justify: false,
+						translateX: 100,
+						translateY: 0,
+						itemsSpacing: 20,
 						itemDirection: 'left-to-right',
 						itemWidth: 80,
 						itemHeight: 20,
