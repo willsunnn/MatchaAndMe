@@ -70,7 +70,7 @@ class DataView extends React.PureComponent {
 
 		// skips some values of data as there are too many
 		const num_data_points = 200;
-		const num_to_skip = Math.floor(data.length / num_data_points);
+		const num_to_skip = Math.max(Math.floor(data.length / num_data_points),1);
 		var new_data = []
 		for(var i=0; i<data.length; i++) {
 			if(i%num_to_skip == 0) {
@@ -140,7 +140,7 @@ class DataView extends React.PureComponent {
 					</Typography>
 				</div>
 				<div className={classes.parentDiv}>
-					{this.render_graph()}
+					{(this.state.data.length > 0) ? this.render_graph() : ""}
 				</div>
 				<div>
 					<Button onClick={this.get_prev_day} color="secondary">
