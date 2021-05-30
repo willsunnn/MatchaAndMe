@@ -16,9 +16,36 @@ const styles = theme => ({
 	}
 });
 
+function get_start_time(date) {
+	// calculate the start time
+	var start = new Date(date.getTime());
+	start.setHours(0,0,0,0);
+	var startString = start.toISOString();
+	startString = startString.substring(0, startString.length-1);
+	return startString;
+}
+
+function get_end_time(date) {
+	// calculate the start time
+	var start = new Date(date.getTime());
+	start.setHours(0,0,0,0);
+
+	// calculate the end time
+	var end = new Date(start.getTime());
+	end.setDate(end.getDate() + 1)					// increment 1 day
+	end = new Date(end.getTime() - 1000)			// subtract 1 second
+	var endString = end.toISOString();
+	endString = endString.substring(0, endString.length-1);
+	return endString;
+}
+
 function get_data(id, date, handler) {
+	// convert start and end time into
+	const req_args = "start="+get_start_time(date)+"&end="+get_end_time(date);
+
+	// semd the request and handle the response
 	const Http = new XMLHttpRequest();
-	const url = '/get-data/' + id;
+	const url = '/get-data/' + id +"?"+req_args;
 	Http.onreadystatechange = function () {
 		if (this.readyState === 4 && this.status === 200) {
 			handler(Http.responseText);
@@ -35,7 +62,6 @@ class DataView extends React.PureComponent {
 		this.state = {
 			id: props.plant_id,
 			data: [],
-			loaded: false,
 			date: new Date()
 		};
 
@@ -50,19 +76,21 @@ class DataView extends React.PureComponent {
 
 	handle_data_request(data) {
 		const parsed = JSON.parse(data);
-		this.setState({ data: this.translate_data_format(parsed), loaded: true});
+		this.setState({ data: this.translate_data_format(parsed)});
 	}
 
 	get_next_day() {
 		var d = this.state.date;
 		d.setDate(d.getDate() + 1);
 		this.setState({date: new Date(d.getTime())});		// creates a copy of date
+		get_data(this.state.id, this.state.date, this.handle_data_request);
 	}
 
 	get_prev_day() {
 		var d = this.state.date;
 		d.setDate(d.getDate() - 1);
 		this.setState({date: new Date(d.getTime())});		// creates a copy of date
+		get_data(this.state.id, this.state.date, this.handle_data_request);
 	}
 
 	// given a JSON array, reorganize the array to the required format for nivo Line Graph
@@ -73,7 +101,7 @@ class DataView extends React.PureComponent {
 		const num_to_skip = Math.max(Math.floor(data.length / num_data_points),1);
 		var new_data = []
 		for(var i=0; i<data.length; i++) {
-			if(i%num_to_skip == 0) {
+			if(i%num_to_skip === 0) {
 				new_data.push(data[i]);
 			}
 		}
@@ -95,6 +123,7 @@ class DataView extends React.PureComponent {
 			var data_point = data[i];
 
 			var dt = this.convertDateTime(data_point.datetime)
+			console.log(dt);
 			humidity_data.push({x: dt, y: data_point.humidity})
 			light_data.push({x: dt, y: data_point.light})
 			soil_data.push({x: dt, y: data_point.soil_moisture})
@@ -112,14 +141,14 @@ class DataView extends React.PureComponent {
 
 	get_x_grid_values()
 	{
-		if (this.state.loaded)
+		if (typeof this.state.data[0].data[0] !== "undefined")
 		{
 			var first = this.state.data[0]['data'][0]['x']
 			var lastData = this.state.data[0]['data']
 			var last = lastData[lastData.length-1]['x']
 			return [first, last]
 		}
-		else { return [0,1] }
+		else { return [this.convertDateTime(get_start_time(this.state.date)), this.convertDateTime(get_end_time(this.state.date))] }
 	}
 
 	// construct with data props
@@ -127,7 +156,7 @@ class DataView extends React.PureComponent {
 
 	convertDateTime(utc_datetime) {
 		var date = new Date(utc_datetime + 'Z');
-		return date.toString();
+		return date.toLocaleTimeString();
 	}
 
 	render() {
@@ -136,7 +165,7 @@ class DataView extends React.PureComponent {
 			<div>
 				<div>
 					<Typography variant="h6">
-						{this.state.date.toUTCString()}
+						{this.state.date.toDateString()}
 					</Typography>
 				</div>
 				<div className={classes.parentDiv}>
@@ -155,12 +184,13 @@ class DataView extends React.PureComponent {
 
 	render_graph() {
 		var firstLast = this.get_x_grid_values()
-
+		const startDate = this.convertDateTime(get_start_time(this.state.date))
+		const endDate = this.convertDateTime(get_end_time(this.state.date))
 		return (
 			<ResponsiveLine
 				data={this.state.data}
 				margin={{ top: 50, right: 110, bottom: 50, left: 110 }}
-				xScale={{ type: 'point' }}
+				xScale={{ type: 'point', min: startDate, max: endDate}}
 				yScale={{ type: 'linear', min: '0', max: '100', stacked: false, reverse: false }}
 				yFormat=" >-.2f"
 				axisTop={null}
