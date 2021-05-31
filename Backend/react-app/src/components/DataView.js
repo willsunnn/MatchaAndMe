@@ -118,7 +118,7 @@ class DataView extends React.PureComponent {
 		var humidity_data = []
 		var temp_data = []
 
-		for(var i = 0; i < data.length; i++) {
+		for(i = 0; i < data.length; i++) {
 			var data_point = data[i];
 
 			var dt = this.convertDateTime(data_point.datetime)

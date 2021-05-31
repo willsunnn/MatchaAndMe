@@ -10,7 +10,6 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
-import TextField from '@material-ui/core/TextField';
 
 const styles = theme => ({
 	parentDiv: {
