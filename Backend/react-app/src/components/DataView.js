@@ -11,6 +11,21 @@ const styles = theme => ({
 		"margin": "20px",
 		"height": "500px"
 	},
+	titleDiv: {
+		"display": "flex",
+		"alignItems": "center",
+		"justifyContent": "center",
+		"marginTop": "20px"
+	},
+	buttonDiv: {
+		"display": "flex",
+		"alignItems": "center",
+		"justifyContent": "center"
+	},
+	button: {
+		"marginLeft": "10px",
+		"marginRight": "10px"
+	},
 	table: {
 		"border": "1px solid black"
 	}
@@ -151,7 +166,7 @@ class DataView extends React.PureComponent {
 		const { classes } = this.props;
 		return (
 			<div>
-				<div>
+				<div className={classes.titleDiv}>
 					<Typography variant="h6">
 						{this.state.date.toDateString()}
 					</Typography>
@@ -159,11 +174,11 @@ class DataView extends React.PureComponent {
 				<div className={classes.parentDiv}>
 					{(this.state.data.length > 0) ? this.render_graph() : ""}
 				</div>
-				<div>
-					<Button onClick={this.get_prev_day} color="secondary">
+				<div className={classes.buttonDiv}>
+					<Button onClick={this.get_prev_day} variant="outlined" color="primary" className={classes.button}>
 						Show Previous Day
 					</Button>
-					<Button onClick={this.get_next_day} color="secondary">
+					<Button onClick={this.get_next_day} variant="outlined" color="primary" className={classes.button}>
 						Show Next Day
 					</Button>
 				</div>
