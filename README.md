@@ -20,3 +20,8 @@
 
 ### Project Demo
 [![Project Proposal Video](https://img.youtube.com/vi/8vKVrBCnxVU/0.jpg)](https://youtu.be/8vKVrBCnxVU)
+
+## Sample Database:
+There is a sample database at the root directory ```sample-database.db```
+To use the data in the database, copy the file to ```Backend/flask-server/``` and name it ```database.db```
+The database contains data for plant #1 from June 1st 2021 to June 4th 2021
