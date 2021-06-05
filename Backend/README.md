@@ -3,14 +3,45 @@
 This directory serves as the backend for our system
 
 The system comprises of 3 components
-- SQL database
-- Backend Server
-- React Server
+- SQL database (Flask SQLAlchemy)
+- Backend Server (Flask framework)
+- Frontend code (React framework with Material UI components)
 
 # Referenced Tutorials
 - https://flask-sqlalchemy.palletsprojects.com/en/2.x/quickstart/
 - https://blog.learningdollars.com/2019/11/29/how-to-serve-a-reactapp-with-a-flask-server/
 
+# Steps to Run:
+
+1) Build React Frontend
+   1) go to react-app directory
+   2) Install npm dependencies: ```npm install```
+   3) Build frontend: ```npm run build```
+2) Start Flask backend
+   1) go to flask-server directory
+   2) create and activate virtual environment
+      1) Create (depends on OS)
+      2) Activate: ```venv/scripts/activate```
+      3) Note: You must have Python 3.7 or higher or the web app won't work!
+   3) install pip requirements
+      1) ```pip install requirements.txt```
+   4) Create SQL Database Instance
+      1) run create-db.py: ```python create-db.py```
+   5) set environment variable FLASK_APP to main.py
+      1) on windows:	```$env:FLASK_APP="main.py"```
+      2) on unix OS:	```export FLASK_APP main.py```
+   6) run command ```flask run --host=0.0.0.0"```
+
+After first time setup is performed (these required steps)
+- installing npm dependencies
+- activating python virtual environment
+- initializing database
+
+The server can easily be started using the ```start.bat``` script on Windows, or by using equivalent commands on Unix. \
+This script automatically builds the frontend as well. 
+
+To database can be reset by running the ```reset-db.bat``` script on Windows, or by using equivalent commands on Unix. \
+This simply automates removing the file ```database.db``` and runs ```create-db.py```
 
 # Exposed Pages
 
@@ -187,27 +218,3 @@ The system comprises of 3 components
 
 	Returns:
 	- Returns the control scheme in JSON notation
-
-# Steps
-
-In order to run the server, these are the required steps
-
-1) Build React Frontend
-   1) go to react-app directory
-   2) run command "npm run build"
-2) Start Flask backend
-   1) go to flask-server directory
-   2) create and activate virtual environment (optional)
-      1) venv/scripts/activate
-      2) Note: You must have Python 3.7 or higher or the web app won't work!
-   3) install pip requirements
-      1) pip install requirements.txt
-   4) Create SQL Database Instance
-      1) in directory where main.py is
-      2) run python interpreter (type python)
-      3) run "from main import db"
-      4) run "db.create_all()"
-   5) set environment variable FLASK_APP to main.py
-      1) on windows:	$env:FLASK_APP="main.py"
-      2) on unix OS:	export FLASK_APP main.py
-   6) run command "flask run --host=0.0.0.0"
