@@ -39,12 +39,33 @@
 </table>
 
 # Hardware Connections
-What hardware connects to what pins
-add picture ideally
+![picture](readme-images/Wiring-Diagram.jpg)
 
 # Setup
-Flash code in particle
-Add libraries
+Open the <a href="https://build.particle.io/build/new">Particle Web IDE</a> and insert embedded code as a new projet
+- make sure you are logged into the same account as your Photon Redboard
+
+Add libraries by clicking on the "libraries" icon on the bottom left
+- JsonParserGeneratorRK
+- HttpClient
+- SparkFunRHT03
+
+Flash code using the icon on the top left
+
+
+
 
 # Code modifications
-manually set ID, and particle auth token in code
+You can manually change the ID of the plant by changing the value on line 64. 
+
+```int plant_id = INSERT_ID_NUMBER_HERE;```
+
+Different plants sending data to the same server should have different ID's
+
+Additionally, you'll need to obtain an access token:
+- make sure you have Particle CLI installed on your computer. You can download it <a href="https://docs.particle.io/tutorials/developer-tools/cli/">here</a>
+- open a terminal and input the following command: <b>particle token create</b> \
+  (you may need to input your password for your Particle account before receiving the token)
+- replace your token with the given token on line 19
+
+```String ACCESS_TOKEN = "INSERT_YOUR_TOKEN_HERE";```

@@ -43,7 +43,7 @@ class AboutPage extends React.Component {
 				Project Demo
 			</Typography>
 			<iframe width="420" height="315"
-			src="https://www.youtube.com/embed/GTM4FukWBOQ">
+			src="https://www.youtube.com/embed/8vKVrBCnxVU">
 			</iframe> 
 			</div>
 

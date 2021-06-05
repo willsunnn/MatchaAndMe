@@ -19,4 +19,4 @@
 [![Project Proposal Video](https://img.youtube.com/vi/GTM4FukWBOQ/0.jpg)](https://youtu.be/GTM4FukWBOQ)
 
 ### Project Demo
-[![Project Proposal Video](https://img.youtube.com/vi/GTM4FukWBOQ/0.jpg)](https://youtu.be/GTM4FukWBOQ)
+[![Project Proposal Video](https://img.youtube.com/vi/8vKVrBCnxVU/0.jpg)](https://youtu.be/8vKVrBCnxVU)
