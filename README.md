@@ -14,7 +14,9 @@
   - used to collect data and relay data to the backend component
   - used to controol plant growth
 
-## Copy of About Us Page:
-```html
-<h4 class="MuiTypography-root MuiTypography-h4">About Matcha &amp; Me</h4><div class="jss2"><h6 class="MuiTypography-root MuiTypography-subtitle1">Project Proposal</h6><iframe src="https://www.youtube.com/embed/GTM4FukWBOQ" width="420" height="315"></iframe></div><div class="jss2"><h6 class="MuiTypography-root MuiTypography-subtitle1">Project Demo</h6><iframe src="https://www.youtube.com/embed/GTM4FukWBOQ" width="420" height="315"></iframe></div><div class="jss2"><h6 class="MuiTypography-root MuiTypography-subtitle1">Github Link!</h6><p class="MuiTypography-root MuiTypography-body1"><a class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary" href="https://github.com/willsunnn/MatchaAndMe">https://github.com/willsunnn/MatchaAndMe</a></p></div>
-```
+## About Us:
+### Project Proposal
+[![Project Proposal Video](https://img.youtube.com/vi/GTM4FukWBOQ/0.jpg)](https://youtu.be/GTM4FukWBOQ)
+
+### Project Demo
+[![Project Proposal Video](https://img.youtube.com/vi/GTM4FukWBOQ/0.jpg)](https://youtu.be/GTM4FukWBOQ)
